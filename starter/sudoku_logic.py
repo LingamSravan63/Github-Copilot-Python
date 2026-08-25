@@ -93,13 +93,20 @@ def _is_valid_board(board):
     return True
 
 def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
+    positions = [(row, col) for row in range(SIZE) for col in range(SIZE)]
+    random.shuffle(positions)
+
+    for row, col in positions:
+        if sum(value != EMPTY for current_row in board for value in current_row) <= clues:
+            break
+
+        original_value = board[row][col]
+        if original_value == EMPTY:
+            continue
+
+        board[row][col] = EMPTY
+        if count_solutions(board, limit=2) != 1:
+            board[row][col] = original_value
 
 def generate_puzzle(clues=35):
     board = create_empty_board()

@@ -1,3 +1,5 @@
+import random
+
 import sudoku_logic
 
 
@@ -36,3 +38,38 @@ def test_generate_puzzle_returns_solution_and_requested_clue_count():
 
     assert puzzle == solution
     assert all(value != sudoku_logic.EMPTY for row in puzzle for value in row)
+
+
+def test_generated_puzzle_has_one_solution_and_agrees_with_solution():
+    random.seed(7)
+
+    puzzle, solution = sudoku_logic.generate_puzzle()
+
+    assert sudoku_logic.count_solutions(puzzle, limit=2) == 1
+    assert all(
+        puzzle[row][col] == sudoku_logic.EMPTY or puzzle[row][col] == solution[row][col]
+        for row in range(sudoku_logic.SIZE)
+        for col in range(sudoku_logic.SIZE)
+    )
+
+
+def test_generated_solutions_are_valid_for_representative_seeds():
+    for seed in (11, 23):
+        random.seed(seed)
+        puzzle, solution = sudoku_logic.generate_puzzle()
+
+        assert all(sorted(row) == list(range(1, sudoku_logic.SIZE + 1)) for row in solution)
+        assert all(
+            len({solution[row][col] for row in range(sudoku_logic.SIZE)}) == sudoku_logic.SIZE
+            for col in range(sudoku_logic.SIZE)
+        )
+        assert all(
+            len({
+                solution[row][col]
+                for row in range(start_row, start_row + 3)
+                for col in range(start_col, start_col + 3)
+            }) == sudoku_logic.SIZE
+            for start_row in range(0, sudoku_logic.SIZE, 3)
+            for start_col in range(0, sudoku_logic.SIZE, 3)
+        )
+        assert sudoku_logic.count_solutions(puzzle, limit=2) == 1
