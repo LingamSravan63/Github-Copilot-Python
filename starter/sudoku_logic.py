@@ -39,6 +39,59 @@ def fill_board(board):
                 return False
     return True
 
+def count_solutions(board, limit=2):
+    working_board = deep_copy(board)
+    if limit <= 0 or not _is_valid_board(working_board):
+        return 0
+
+    def count_from_next_empty():
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if working_board[row][col] == EMPTY:
+                    solution_count = 0
+                    for candidate in range(1, SIZE + 1):
+                        if is_safe(working_board, row, col, candidate):
+                            working_board[row][col] = candidate
+                            solution_count += count_from_next_empty()
+                            working_board[row][col] = EMPTY
+                            if solution_count >= limit:
+                                return solution_count
+                    return solution_count
+        return 1
+
+    return count_from_next_empty()
+
+def _is_valid_board(board):
+    if len(board) != SIZE or any(len(row) != SIZE for row in board):
+        return False
+
+    for row in board:
+        if any(value not in range(EMPTY, SIZE + 1) for value in row):
+            return False
+
+    for row in range(SIZE):
+        values = [value for value in board[row] if value != EMPTY]
+        if len(values) != len(set(values)):
+            return False
+
+    for col in range(SIZE):
+        values = [board[row][col] for row in range(SIZE) if board[row][col] != EMPTY]
+        if len(values) != len(set(values)):
+            return False
+
+    for start_row in range(0, SIZE, 3):
+        for start_col in range(0, SIZE, 3):
+            values = [
+                board[row][col]
+                for row in range(start_row, start_row + 3)
+                for col in range(start_col, start_col + 3)
+                if board[row][col] != EMPTY
+            ]
+            if len(values) != len(set(values)):
+                return False
+
+    return True
+
 def remove_cells(board, clues):
     attempts = SIZE * SIZE - clues
     while attempts > 0:
