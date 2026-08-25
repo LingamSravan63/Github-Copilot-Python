@@ -1,6 +1,7 @@
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
 let puzzle = [];
+let hintsUsed = 0;
 
 function getVisibleBoard() {
   const inputs = document.getElementById('sudoku-board').getElementsByTagName('input');
@@ -87,6 +88,8 @@ function createBoardElement() {
 
 function renderPuzzle(puz) {
   puzzle = puz;
+  hintsUsed = 0;
+  document.getElementById('hint-count').innerText = `Hints: ${hintsUsed}`;
   createBoardElement();
   const boardDiv = document.getElementById('sudoku-board');
   const inputs = boardDiv.getElementsByTagName('input');
@@ -113,6 +116,34 @@ async function newGame() {
   const data = await res.json();
   renderPuzzle(data.puzzle);
   document.getElementById('message').innerText = '';
+}
+
+async function hint() {
+  const res = await fetch('/hint', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({board: getVisibleBoard()})
+  });
+  const data = await res.json();
+  const msg = document.getElementById('message');
+  if (data.error) {
+    msg.innerText = data.error;
+    return;
+  }
+
+  const inputs = document.getElementById('sudoku-board').getElementsByTagName('input');
+  const input = inputs[data.row * SIZE + data.col];
+  if (!input || input.disabled || input.value) {
+    msg.innerText = 'The selected cell is no longer available for a hint.';
+    return;
+  }
+
+  input.value = data.value;
+  input.disabled = true;
+  input.classList.add('hinted');
+  hintsUsed += 1;
+  document.getElementById('hint-count').innerText = `Hints: ${hintsUsed}`;
+  validateBoard();
 }
 
 async function checkSolution() {
@@ -161,6 +192,7 @@ async function checkSolution() {
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
+  document.getElementById('hint').addEventListener('click', hint);
   // initialize
   newGame();
 });

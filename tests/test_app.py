@@ -117,3 +117,75 @@ def test_check_requires_a_game_in_progress():
 
     assert response.status_code == 400
     assert response.get_json() == {'error': 'No game in progress'}
+
+
+def test_hint_requires_a_game_in_progress():
+    client = app.test_client()
+
+    response = client.post('/hint', json={'board': sudoku_logic.create_empty_board()})
+
+    assert response.status_code == 400
+    assert response.get_json() == {'error': 'No game in progress'}
+
+
+def test_hint_returns_one_empty_cell_and_solution_value():
+    client = app.test_client()
+    client.get('/new')
+    board = copy.deepcopy(CURRENT['puzzle'])
+
+    response = client.post('/hint', json={'board': board})
+    hint_data = response.get_json()
+
+    assert response.status_code == 200
+    assert set(hint_data) == {'row', 'col', 'value'}
+    assert CURRENT['puzzle'][hint_data['row']][hint_data['col']] == sudoku_logic.EMPTY
+    assert hint_data['value'] == CURRENT['solution'][hint_data['row']][hint_data['col']]
+
+
+def test_hint_does_not_select_a_player_filled_cell():
+    client = app.test_client()
+    client.get('/new')
+    board = copy.deepcopy(CURRENT['puzzle'])
+    empty_cell = next(
+        (row, col)
+        for row in range(sudoku_logic.SIZE)
+        for col in range(sudoku_logic.SIZE)
+        if board[row][col] == sudoku_logic.EMPTY
+    )
+    board[empty_cell[0]][empty_cell[1]] = 9
+
+    response = client.post('/hint', json={'board': board})
+    hint_data = response.get_json()
+
+    assert response.status_code == 200
+    assert (hint_data['row'], hint_data['col']) != empty_cell
+
+
+def test_hint_returns_no_empty_cells_error():
+    client = app.test_client()
+    client.get('/new')
+    board = copy.deepcopy(CURRENT['solution'])
+
+    response = client.post('/hint', json={'board': board})
+
+    assert response.status_code == 409
+    assert response.get_json() == {'error': 'No empty cells available for a hint'}
+
+
+@pytest.mark.parametrize('board', [
+    [],
+    [[0] * sudoku_logic.SIZE for _ in range(sudoku_logic.SIZE - 1)],
+    [[0] * (sudoku_logic.SIZE - 1) for _ in range(sudoku_logic.SIZE)],
+    [[0] * sudoku_logic.SIZE for _ in range(sudoku_logic.SIZE - 1)] + [[10] * sudoku_logic.SIZE],
+    {'not': 'a board'},
+])
+def test_hint_rejects_invalid_board_payload(board):
+    client = app.test_client()
+    client.get('/new')
+
+    response = client.post('/hint', json={'board': board})
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        'error': 'Board must be a 9x9 grid of values from 0 to 9'
+    }
