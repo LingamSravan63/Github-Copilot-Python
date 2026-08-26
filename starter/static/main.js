@@ -57,7 +57,7 @@ function validateBoard() {
   for (let idx = 0; idx < inputs.length; idx++) {
     const input = inputs[idx];
     if (!input.disabled) {
-      input.classList.toggle('incorrect', conflictingCells.has(idx));
+      input.classList.toggle('conflict', conflictingCells.has(idx));
     }
   }
 }
@@ -174,9 +174,9 @@ async function checkSolution() {
   for (let idx = 0; idx < inputs.length; idx++) {
     const inp = inputs[idx];
     if (inp.disabled) continue;
-    inp.className = 'sudoku-cell';
+    inp.classList.remove('incorrect');
     if (incorrect.has(idx)) {
-      inp.className = 'sudoku-cell incorrect';
+      inp.classList.add('incorrect');
     }
   }
   if (incorrect.size === 0) {
