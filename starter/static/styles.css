@@ -3,8 +3,10 @@
     --page-text: #333;
     --panel-bg: #fff;
     --panel-border: #333;
-    --cell-bg: #fafafa;
+    --box-a-bg: #fafafa;
+    --box-b-bg: #eef5fb;
     --cell-border: #bbb;
+    --box-border: #333;
     --prefilled-bg: #e0e0e0;
     --prefilled-text: #333;
     --hint-bg: #fff3cd;
@@ -46,6 +48,10 @@ body.dark-mode {
     --conflict-bg: #4a3d16;
     --conflict-border: #f9c74f;
     --incorrect-bg: #5a2d33;
+    --incorrect-border: #ff8a94;
+    --box-a-bg: #1d2733;
+    --box-b-bg: #243342;
+    --box-border: #dfe8f6;
     --button-bg: #2d77d6;
     --button-hover: #235eb1;
     --button-text: #f3f7ff;
@@ -57,6 +63,18 @@ body.dark-mode {
     --message-success: #7ee3a8;
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 h1 {
     margin-top: 30px;
     color: var(--page-text);
@@ -64,6 +82,8 @@ h1 {
 
 #sudoku-board {
     display: inline-block;
+    width: min(432px, calc(100vw - 1rem));
+    max-width: 100%;
     margin: 30px auto;
     border: 4px solid var(--panel-border);
     background: var(--panel-bg);
@@ -71,19 +91,29 @@ h1 {
 }
 
 .sudoku-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
 }
 
 .sudoku-cell {
-    width: 40px;
-    height: 40px;
+    width: 100%;
+    aspect-ratio: 1;
+    min-width: 0;
+    padding: 0;
     border: 1px solid var(--cell-border);
     text-align: center;
     font-size: 20px;
     outline: none;
-    background: var(--cell-bg);
     color: var(--page-text);
     transition: background 0.2s;
+}
+
+.sudoku-cell.box-a {
+    background: var(--box-a-bg);
+}
+
+.sudoku-cell.box-b {
+    background: var(--box-b-bg);
 }
 
 .sudoku-cell:focus {
@@ -113,25 +143,33 @@ body.dark-mode .sudoku-cell:focus {
 
 .sudoku-cell.incorrect {
     background: var(--incorrect-bg);
+    box-shadow: inset 0 0 0 2px var(--incorrect-border);
 }
 
 .sudoku-cell:nth-child(3),
 .sudoku-cell:nth-child(6) {
-    border-right: 3px solid #333;
+    border-right: 3px solid var(--box-border);
 }
 
 .sudoku-row:nth-child(3) .sudoku-cell,
 .sudoku-row:nth-child(6) .sudoku-cell {
-    border-bottom: 3px solid #333;
+    border-bottom: 3px solid var(--box-border);
 }
 
 .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: min(100%, 900px);
+    padding: 0 8px;
     margin: 20px auto;
 }
 
 button {
     padding: 8px 18px;
-    margin: 0 8px;
+    margin: 0;
     font-size: 16px;
     border: none;
     background: var(--button-bg);
@@ -145,6 +183,13 @@ button:hover {
     background: var(--button-hover);
 }
 
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--conflict-border);
+    outline-offset: 2px;
+}
+
 select,
 input {
     background: var(--input-bg);
@@ -155,7 +200,6 @@ input {
 }
 
 #player-name {
-    margin-right: 8px;
     font-size: 14px;
 }
 
@@ -171,14 +215,17 @@ input {
 }
 
 #message {
-    margin-left: 20px;
+    flex: 1 1 100%;
+    margin-left: 0;
     font-size: 16px;
     color: var(--message-error);
 }
 
 .leaderboard {
     margin: 24px auto 0;
-    width: 520px;
+    width: min(520px, calc(100% - 1rem));
+    max-width: 100%;
+    overflow-x: auto;
     text-align: left;
     color: var(--page-text);
 }
@@ -190,6 +237,7 @@ input {
 
 .leaderboard table {
     width: 100%;
+    min-width: 520px;
     border-collapse: collapse;
     background: var(--table-bg);
     color: var(--page-text);
@@ -201,4 +249,28 @@ input {
     border: 1px solid var(--table-border);
     padding: 8px 10px;
     text-align: center;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        margin-top: 20px;
+        font-size: 28px;
+    }
+
+    #sudoku-board {
+        margin: 20px auto;
+    }
+
+    .controls {
+        gap: 8px 6px;
+    }
+
+    button {
+        padding: 8px 12px;
+    }
+
+    .leaderboard th,
+    .leaderboard td {
+        padding: 6px 8px;
+    }
 }

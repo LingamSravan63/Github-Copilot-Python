@@ -276,16 +276,18 @@ function validateBoard() {
 function createBoardElement() {
   const boardDiv = document.getElementById('sudoku-board');
   boardDiv.innerHTML = '';
-  for (let i = 0; i < SIZE; i++) {
+  for (let row = 0; row < SIZE; row++) {
     const rowDiv = document.createElement('div');
     rowDiv.className = 'sudoku-row';
-    for (let j = 0; j < SIZE; j++) {
+    for (let col = 0; col < SIZE; col++) {
       const input = document.createElement('input');
       input.type = 'text';
       input.maxLength = 1;
       input.className = 'sudoku-cell';
-      input.dataset.row = i;
-      input.dataset.col = j;
+      input.dataset.row = row;
+      input.dataset.col = col;
+      const boxIndex = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+      input.classList.add(boxIndex % 2 === 0 ? 'box-a' : 'box-b');
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
