@@ -112,19 +112,50 @@ Evidence of the workflow is available in `Screenshots/`.
 
 ## Screenshots
 
-Representative evidence includes:
+### Initial Test Setup
+Baseline pytest framework was configured before refactoring. All initial tests passed successfully.
 
-![Initial tests](Screenshots/Initial_tests.png)
+![Initial Tests](Screenshots/Initial_tests.png)
 
-![Unique-solution implementation](Screenshots/Copilot_Unique_solution.png)
+### Unique Solution Validation
+GitHub Copilot was used to analyze and implement unique-solution Sudoku generation.
 
-![Top 10 leaderboard](Screenshots/Top10_Leaderboard_Feedback.png)
+![Unique Solution Copilot](Screenshots/Copilot_Unique_solution.png)
+
+### Hint Feature
+The Hint feature fills one correct empty cell, locks it, and increments the hint counter.
+
+![Hint Feature](Screenshots/Copliot_Hints_Feedback.png)
+
+### Invalid Move Feedback
+Invalid Sudoku entries receive immediate visual feedback for row, column, and 3x3-box conflicts.
+
+![Invalid Move Feedback](Screenshots/Invalid_Move_Feedback.png)
+
+### Timer and Completion
+The timer tracks game duration and stops when the puzzle is completed successfully.
+
+![Timer and Completion](Screenshots/Timer_Completion_Feedback.png)
+
+### Top 10 Leaderboard
+Completed games are saved to a persistent Top 10 leaderboard using browser localStorage.
+
+![Top 10 Leaderboard](Screenshots/Top10_Leaderboard_Feedback.png)
+
+### Dark Mode
+The entire Sudoku interface supports persistent light and dark themes.
 
 ![Dark Mode](Screenshots/DarkMode_Feedback.png)
 
-![Responsive 3x3 styling](Screenshots/Responsive_3x3_Feedback.png)
+### Responsive 3x3 Sudoku Styling
+The Sudoku board uses alternating 3x3 square colors and adapts to desktop and mobile layouts.
 
-![Copilot suggestion evaluation](Screenshots/Copilot_Suggestion_Evaluation.png)
+![Responsive 3x3 Styling](Screenshots/Responsive_3x3_Feedback.png)
+
+### Responsible Copilot Evaluation
+A Copilot suggestion was reviewed and modified rather than accepted blindly.
+
+![Copilot Suggestion Evaluation](Screenshots/Copilot_Suggestion_Evaluation.png)
 
 ## How to Play
 
