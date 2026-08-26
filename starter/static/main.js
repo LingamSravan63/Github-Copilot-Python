@@ -2,6 +2,75 @@
 const SIZE = 9;
 let puzzle = [];
 let hintsUsed = 0;
+let timerInterval = null;
+let elapsedSeconds = 0;
+let gameState = 'idle';
+
+function formatElapsedTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function updateTimerDisplay() {
+  const timer = document.getElementById('timer');
+  if (timer) {
+    timer.innerText = `Time: ${formatElapsedTime(elapsedSeconds)}`;
+  }
+}
+
+function stopTimer() {
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function startTimer() {
+  stopTimer();
+  timerInterval = setInterval(() => {
+    if (gameState !== 'active') {
+      return;
+    }
+    elapsedSeconds += 1;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function resetTimer() {
+  stopTimer();
+  elapsedSeconds = 0;
+  updateTimerDisplay();
+}
+
+function completeGame() {
+  if (gameState === 'completed') {
+    return;
+  }
+
+  gameState = 'completed';
+  stopTimer();
+
+  const boardDiv = document.getElementById('sudoku-board');
+  if (boardDiv) {
+    const inputs = boardDiv.getElementsByTagName('input');
+    for (let idx = 0; idx < inputs.length; idx++) {
+      const inp = inputs[idx];
+      if (inp.disabled) {
+        continue;
+      }
+      inp.disabled = true;
+      inp.classList.remove('conflict');
+      inp.classList.remove('incorrect');
+    }
+  }
+
+  const msg = document.getElementById('message');
+  if (msg) {
+    msg.style.color = '#388e3c';
+    msg.innerText = 'Congratulations! You solved it!';
+  }
+}
 
 function getVisibleBoard() {
   const inputs = document.getElementById('sudoku-board').getElementsByTagName('input');
@@ -89,6 +158,9 @@ function createBoardElement() {
 function renderPuzzle(puz) {
   puzzle = puz;
   hintsUsed = 0;
+  gameState = 'active';
+  resetTimer();
+  startTimer();
   document.getElementById('hint-count').innerText = `Hints: ${hintsUsed}`;
   createBoardElement();
   const boardDiv = document.getElementById('sudoku-board');
@@ -106,6 +178,8 @@ function renderPuzzle(puz) {
         inp.value = '';
         inp.disabled = false;
       }
+      inp.classList.remove('conflict');
+      inp.classList.remove('incorrect');
     }
   }
 }
@@ -116,9 +190,13 @@ async function newGame() {
   const data = await res.json();
   renderPuzzle(data.puzzle);
   document.getElementById('message').innerText = '';
+  document.getElementById('message').style.color = '#d32f2f';
 }
 
 async function hint() {
+  if (gameState === 'completed') {
+    return;
+  }
   const res = await fetch('/hint', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -147,6 +225,10 @@ async function hint() {
 }
 
 async function checkSolution() {
+  if (gameState === 'completed') {
+    return;
+  }
+
   const boardDiv = document.getElementById('sudoku-board');
   const inputs = boardDiv.getElementsByTagName('input');
   const board = [];
@@ -180,8 +262,7 @@ async function checkSolution() {
     }
   }
   if (incorrect.size === 0) {
-    msg.style.color = '#388e3c';
-    msg.innerText = 'Congratulations! You solved it!';
+    completeGame();
   } else {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';
