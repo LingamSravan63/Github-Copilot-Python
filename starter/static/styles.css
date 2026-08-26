@@ -89,6 +89,12 @@ button:hover {
     background: #1565c0;
 }
 
+#player-name {
+    margin-right: 8px;
+    padding: 6px 8px;
+    font-size: 14px;
+}
+
 #timer {
     margin-left: 12px;
     font-size: 16px;
@@ -100,4 +106,29 @@ button:hover {
     margin-left: 20px;
     font-size: 16px;
     color: #d32f2f;
+}
+
+.leaderboard {
+    margin: 24px auto 0;
+    width: 520px;
+    text-align: left;
+}
+
+.leaderboard h2 {
+    margin-bottom: 8px;
+    font-size: 20px;
+}
+
+.leaderboard table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.leaderboard th,
+.leaderboard td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: center;
 }

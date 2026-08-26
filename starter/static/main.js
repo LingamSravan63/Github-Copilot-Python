@@ -1,10 +1,12 @@
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
+const TOP_SCORES_KEY = 'sudoku-top-scores';
 let puzzle = [];
 let hintsUsed = 0;
 let timerInterval = null;
 let elapsedSeconds = 0;
 let gameState = 'idle';
+let scoreSavedForGame = false;
 
 function formatElapsedTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
@@ -43,8 +45,98 @@ function resetTimer() {
   updateTimerDisplay();
 }
 
+function normalizePlayerName(name) {
+  const normalized = String(name || '').trim() || 'Player';
+  return normalized.slice(0, 20);
+}
+
+function loadTopScores() {
+  try {
+    const raw = localStorage.getItem(TOP_SCORES_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return false;
+      }
+      return typeof entry.name === 'string'
+        && Number.isFinite(entry.elapsedSeconds)
+        && typeof entry.difficulty === 'string'
+        && Number.isFinite(entry.hintsUsed);
+    });
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveTopScores(scores) {
+  try {
+    localStorage.setItem(TOP_SCORES_KEY, JSON.stringify(scores));
+  } catch (error) {
+    // Ignore storage failures quietly.
+  }
+}
+
+function addScoreEntry(score) {
+  const scores = loadTopScores();
+  scores.push(score);
+  scores.sort((a, b) => {
+    if (a.elapsedSeconds !== b.elapsedSeconds) {
+      return a.elapsedSeconds - b.elapsedSeconds;
+    }
+    return a.hintsUsed - b.hintsUsed;
+  });
+  saveTopScores(scores.slice(0, 10));
+  renderTopScores();
+}
+
+function renderTopScores() {
+  const tableBody = document.getElementById('top-scores-body');
+  if (!tableBody) {
+    return;
+  }
+
+  const scores = loadTopScores();
+  tableBody.innerHTML = '';
+
+  if (scores.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.textContent = 'No scores yet.';
+    row.appendChild(cell);
+    tableBody.appendChild(row);
+    return;
+  }
+
+  scores.forEach((score, index) => {
+    const row = document.createElement('tr');
+    const rank = document.createElement('td');
+    const name = document.createElement('td');
+    const time = document.createElement('td');
+    const difficulty = document.createElement('td');
+    const hints = document.createElement('td');
+
+    rank.textContent = String(index + 1);
+    name.textContent = score.name;
+    time.textContent = formatElapsedTime(score.elapsedSeconds);
+    difficulty.textContent = score.difficulty;
+    hints.textContent = String(score.hintsUsed);
+
+    row.append(rank, name, time, difficulty, hints);
+    tableBody.appendChild(row);
+  });
+}
+
 function completeGame() {
-  if (gameState === 'completed') {
+  if (gameState === 'completed' || scoreSavedForGame) {
     return;
   }
 
@@ -70,6 +162,20 @@ function completeGame() {
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
   }
+
+  const playerNameInput = document.getElementById('player-name');
+  const playerName = normalizePlayerName(playerNameInput ? playerNameInput.value : 'Player');
+  const difficulty = document.getElementById('difficulty')?.value || 'medium';
+  const score = {
+    name: playerName,
+    elapsedSeconds: elapsedSeconds,
+    difficulty,
+    hintsUsed,
+    savedAt: new Date().toISOString()
+  };
+
+  addScoreEntry(score);
+  scoreSavedForGame = true;
 }
 
 function getVisibleBoard() {
@@ -158,6 +264,7 @@ function createBoardElement() {
 function renderPuzzle(puz) {
   puzzle = puz;
   hintsUsed = 0;
+  scoreSavedForGame = false;
   gameState = 'active';
   resetTimer();
   startTimer();
@@ -271,6 +378,7 @@ async function checkSolution() {
 
 // Wire buttons
 window.addEventListener('load', () => {
+  renderTopScores();
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   document.getElementById('hint').addEventListener('click', hint);

@@ -15,6 +15,8 @@
   </select>
   <div id="sudoku-board"></div>
   <div class="controls">
+    <label for="player-name">Player Name:</label>
+    <input id="player-name" name="player-name" type="text" maxlength="20" value="Player" />
     <button id="new-game">New Game</button>
     <button id="check-solution">Check Solution</button>
     <button id="hint">Hint</button>
@@ -22,6 +24,22 @@
     <span id="hint-count">Hints: 0</span>
     <span id="message"></span>
   </div>
+
+  <section class="leaderboard">
+    <h2>Top 10</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Time</th>
+          <th>Difficulty</th>
+          <th>Hints</th>
+        </tr>
+      </thead>
+      <tbody id="top-scores-body"></tbody>
+    </table>
+  </section>
   <script src="/static/main.js"></script>
 </body>
 </html>
