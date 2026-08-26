@@ -114,7 +114,7 @@ Evidence of the workflow is available in `Screenshots/`.
 
 Representative evidence includes:
 
-![Initial tests](Screenshots/initial_tests.png)
+![Initial tests](Screenshots/Initial_tests.png)
 
 ![Unique-solution implementation](Screenshots/Copilot_Unique_solution.png)
 
