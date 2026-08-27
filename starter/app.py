@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 import sudoku_logic
+from services.game_service import find_hint, find_incorrect_cells
+from services.validation_service import validate_board, validate_difficulty
 
 app = Flask(__name__)
 
@@ -23,9 +25,10 @@ def index():
 def new_game():
     difficulty = request.args.get('difficulty')
     if difficulty is not None:
-        difficulty = difficulty.lower()
-        if difficulty not in DIFFICULTY_CLUES:
-            return jsonify({'error': f'Unsupported difficulty: {difficulty}'}), 400
+        try:
+            difficulty = validate_difficulty(difficulty, DIFFICULTY_CLUES)
+        except ValueError as error:
+            return jsonify({'error': str(error)}), 400
         clues = DIFFICULTY_CLUES[difficulty]
     else:
         clues = int(request.args.get('clues', 35))
@@ -36,17 +39,17 @@ def new_game():
 
 @app.route('/check', methods=['POST'])
 def check_solution():
-    data = request.json
-    board = data.get('board')
     solution = CURRENT.get('solution')
     if solution is None:
         return jsonify({'error': 'No game in progress'}), 400
-    incorrect = []
-    for i in range(sudoku_logic.SIZE):
-        for j in range(sudoku_logic.SIZE):
-            if board[i][j] != solution[i][j]:
-                incorrect.append([i, j])
-    return jsonify({'incorrect': incorrect})
+
+    data = request.get_json(silent=True)
+    board = data.get('board') if isinstance(data, dict) else None
+    try:
+        validate_board(board)
+    except ValueError as error:
+        return jsonify({'error': str(error)}), 400
+    return jsonify({'incorrect': find_incorrect_cells(board, solution)})
 
 @app.route('/hint', methods=['POST'])
 def hint():
@@ -57,29 +60,12 @@ def hint():
 
     data = request.get_json(silent=True)
     board = data.get('board') if isinstance(data, dict) else None
-    if not _is_valid_board_payload(board):
-        return jsonify({'error': 'Board must be a 9x9 grid of values from 0 to 9'}), 400
-
-    for row in range(sudoku_logic.SIZE):
-        for col in range(sudoku_logic.SIZE):
-            if puzzle[row][col] == sudoku_logic.EMPTY and board[row][col] == sudoku_logic.EMPTY:
-                return jsonify({
-                    'row': row,
-                    'col': col,
-                    'value': solution[row][col]
-                })
-
-    return jsonify({'error': 'No empty cells available for a hint'}), 409
-
-def _is_valid_board_payload(board):
-    if not isinstance(board, list) or len(board) != sudoku_logic.SIZE:
-        return False
-    return all(
-        isinstance(row, list)
-        and len(row) == sudoku_logic.SIZE
-        and all(isinstance(value, int) and 0 <= value <= sudoku_logic.SIZE for value in row)
-        for row in board
-    )
+    try:
+        validate_board(board)
+        return jsonify(find_hint(puzzle, solution, board))
+    except ValueError as error:
+        status = 409 if str(error) == 'No empty cells available for a hint' else 400
+        return jsonify({'error': str(error)}), status
 
 if __name__ == '__main__':
     app.run(debug=True)
