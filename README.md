@@ -115,16 +115,16 @@ Evidence of the workflow is available in `Screenshots/`.
 ## Copilot Evidence
 
 ### Testing Framework Setup
-![Testing Framework Setup](Screenshots/Testing_Framework_Setup.png)
+![Testing Framework Setup](Screenshots/Copilot_Testing_Framework.png)
 
 ### Puzzle Uniqueness Validation
 ![Puzzle Uniqueness Validation](Screenshots/Puzzle_Uniqueness_Validation.png)
 
 ### Top 10 Local Storage
-![Top 10 Local Storage](Screenshots/Top10_LocalStorage_Prompt.png)
+![Top 10 Local Storage](Screenshots/Copilot_Top10_LocalStorage.png)
 
 ### 3x3 Grid Styling
-![3x3 Grid Styling](Screenshots/3x3_Grid_Styling_Prompt.png)
+![3x3 Grid Styling](Screenshots/Copilot_3x3_Grid_Styling_Prompt.png)
 
 ### Evaluating and Rejecting a Copilot Suggestion
 ![Rejected Copilot Suggestion](Screenshots/Copilot_Rejected_Suggestion.png)
